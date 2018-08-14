@@ -9,32 +9,53 @@
 namespace App\Http\Controllers;
 
 
+use App\Product;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Input;
 
 class ProductController extends Controller
 {
 
-    function list(){
-        $foods = DB::select('select * from foods');
-        return view('product.list') -> with('foods', $foods);
+    function index(){
+        $foods = Product::all();
+        return view('admin.product.list') -> with('foods', $foods);
     }
 
     function create()
     {
-        return view('product.form');
+        return view('admin.product.form');
     }
 
-    function store(Request $request)
+    function store()
     {
-        $name = $request -> input('name');
-        $description = $request -> input('description');
-        $price = $request -> input('price');
-        $thumbnail = $request -> input('thumbnail');
-        $categoryId = $request -> input('categoryId');
-        $query = 'insert into foods (title, description, price, thumbnail, categoryId)'
-                . ' values ("' . $name . '", "'. $description .'", '. $price.', "' . $thumbnail. '", ' . $categoryId .')';
-        DB::insert($query);
-        return view('success') -> with('name', $request -> input('name'));
+        $product = new Product();
+        $product->name = Input::get('name');
+        $product->description = Input::get('description');
+        $product->price = Input::get('price');
+        $product->image = Input::get('thumbnail');
+        $product->save();
+        return redirect('/admin/product');
+    }
+
+    function edit($id){
+        $product = Product::find($id);
+        if($product == null){
+            return 'Sản phẩm không tồn tại hoặc đã bị xoá.';
+        }
+        return view('admin.product.edit')->with('product', $product);
+    }
+
+    function update($id){
+        $product = Product::find($id);
+        if($product == null){
+            return 'Sản phẩm không tồn tại hoặc đã bị xoá.';
+        }
+        $product->name = Input::get('name');
+        $product->description = Input::get('description');
+        $product->price = Input::get('price');
+        $product->image = Input::get('thumbnail');
+        $product->save();
+        return redirect('/admin/product');
     }
 }
